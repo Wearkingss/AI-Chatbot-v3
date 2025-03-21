@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My AI Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #chatbox { width: 80%; height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin: auto; }
+        #userInput { width: 70%; padding: 10px; }
+        #send { padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>My AI Chatbot</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="userInput" placeholder="Type a message...">
+    <button id="send">Send</button>
+    
+    <script>
+        const API_URL = "https://api.deepseek.com/v1/chat/completions"; // DeepSeek R1 Zero API endpoint
+        const API_KEY = "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"; // Replace with your actual API key
+        
+        document.getElementById("send").addEventListener("click", async function() {
+            let input = document.getElementById("userInput").value;
+            if (input.trim() === "") return;
+            
+            let chatbox = document.getElementById("chatbox");
+            chatbox.innerHTML += `<p><strong>You:</strong> ${input}</p>`;
+            document.getElementById("userInput").value = "";
+            
+            let botResponse = await getBotResponse(input);
+            chatbox.innerHTML += `<p><strong>Bot:</strong> ${botResponse}</p>`;
+            chatbox.scrollTop = chatbox.scrollHeight;
+        });
+        
+        async function getBotResponse(input) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "deepseek-r1-zero",
+                        messages: [{ role: "user", content: input }]
+                    })
+                });
+                
+                const data = await response.json();
+                return data.choices[0]?.message?.content || "Sorry, I couldn't process that.";
+            } catch (error) {
+                return "Error fetching response. Try again later.";
+            }
+        }
+    </script>
+</body>
+</html>
